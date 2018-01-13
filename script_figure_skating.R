@@ -1,0 +1,1 @@
+#analysis of stats on olympics figure skating
