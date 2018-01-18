@@ -1,0 +1,64 @@
+---
+title: "Analysis_medal_per_athlete"
+author: "stewarta"
+date: "14 January 2018"
+output: html_document
+---
+
+# R Analysing medals won per athlete/per country
+
+Today I am introducing a sneaky little data analysis using [R](https://www.r-project.org/) on figure skating in the olympics. I am first going to look at the medals won using data from the [official Olympics database website](http://www.olympiandatabase.com)
+
+## Looking at the total number of athletes that have won at least a medal per country
+
+```{r fig.height = 5, fig.width= 15}
+#loading libraries
+library(ggplot2)
+
+#reading csv file
+medalCount <- read.csv(file="./stats_athletes_with_medals_count.csv", header=TRUE, sep=",")
+medalCountdf <- data.frame(medalCount)
+#number of athletes per country that have won at least one medal
+tbl_total_num_athletes_with_medal <- table(medalCountdf$NationID)
+barplot(tbl_total_num_athletes_with_medal, main="Number of medals won per country")
+```
+No surprises there, America has always entered as many athletes as they were possibly allowed and have the budget to bring them all.
+
+But let's see if they still had the highest number of wins:
+
+## Number of gold medals per country
+
+```{r fig.height = 5, fig.width= 15}
+tbl_gold <- table(medalCountdf[which(medalCountdf$G!=0),]$NationID)
+barplot(tbl_gold, main="Number of gold medals won per country")
+
+```
+
+## Athletes that have won multiple times
+
+```{r fig.height = 5, fig.width= 20}
+multiple_gold_athletes <- medalCountdf[which(medalCountdf$G>1),]
+print(multiple_gold_athletes)
+#ggplot(data=multiple_gold_athletes, aes(x=Athlete, y=multiple_gold_athletes$G)) +
+  #geom_bar(stat="identity")
+
+#barplot(tbl_gold_athletes, main="Athletes with multiple wins")
+
+```
+
+## French athletes with medals
+
+Since I am french and I used to skate in France, I'm very interested in how we did over the years so here are all the french athletes who have won at least a medal in the order they are scored according to how many and which color their medals were.
+```{r fig.height = 5, fig.width= 20}
+french_athletes_score <- medalCountdf[which(medalCountdf$NationID=="FRA"),]
+print(french_athletes_score)
+
+```
+
+```{r fig.height = 5, fig.width= 20}
+nations_with_athletes_with_no_wins <- table(medalCountdf[which(medalCountdf$G<1),]$NationID)
+barplot(nations_with_athletes_with_no_wins, main="Number of athletes per country who have never won")
+
+nations_with_athletes_with_no_wins <- medalCountdf[which(medalCountdf$G<1),]
+
+```

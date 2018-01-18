@@ -1,0 +1,16 @@
+Country,CountryID,Contestant_name,contestant_age,gender,score_tech_sp,score_art_sp,deduction,score_tech_fs,score_art_fs,deduction,place_sp,place_fs,place_overall
+Russia,RUS,Evgenia Medvedeva,17,F,42.10,36.91,0
+Canada,CAN,Gabrielle Daleman,19,F,39.19,33.00,0
+United States of America,USA,Ashley Wagner,25,F,35.27,33.77,0
+Russia,RUS,Maria Sotskova,16,F,38.14,31.62,0
+Japan,JPN,Rika Hongo,20,F,31.45,31.10,0
+Russia,RUS,Anna Pogorilaya,18,37.21,34.31,0
+
+
+
+Japan,JPN,Yuzuru Hanyu,22,M,52.04,47.35,-1,126.12,97.08
+Japan,JPN,Shoma Uno,19,M,59.16,45.70,0
+Russia,RUS,Maxim Kovtun,21,M,48.45,41.93,-1
+Spain,ESP,Javier Fernandez,25,M,60.79,48.26,0
+Canada,CAN,Patrick Chan,26,M,54.11,48.02
+United States of America,USA,Jason Brown,22,48.00,45.10,0,
