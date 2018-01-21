@@ -1,0 +1,150 @@
+---
+title: "Figure_skating_PB_athletes"
+author: "stewarta"
+date: "20 January 2018"
+output: html_document
+---
+
+Today I am writing another piece about figure skating, also another piece about data analysis in this event. But I am not focusing solely on the Olympics this time but on the best scoring athletes and the best scoring event of each athlete. There is a lot of data to go through, so let's get right into it! The data comes from the ([International skating Union](http://www.isu.org/statistics)) website which I downloaded on the 20/01/2018 (if you try my code and the results are different it might be because the data on the website has changed). Reproducible blogging is important!
+
+# Personal Best for athletes: a first look at the data
+
+I first load up the files I compiled from the data found on the ISU website. The ladies' and men's event are separated into two different files because the data is separated on the website and it wouldn't make any sense to compare anyways. Let's check out a few lines of each the dataframes to see how they are structured:
+
+```{r, message=FALSE}
+#loading libraries and reading data from ladies' and mens' events
+library(readODS)
+ISU_ladies_df <- read_ods("ISU_events_PB_ladies.ods")
+ISU_men_df <- read_ods("ISU_events_PB_men.ods")
+head(ISU_ladies_df)
+head (ISU_men_df)
+```
+
+This data is very rich, it's perfect for us. Let's break it down and look a little more specifically. Last time I was very interested in how France did. I was talking with a Turkish friend and she wondered what her fellow Turkish did in the sport, so let's look at Turkish athletes for a change: 
+
+```{r}
+athletes_turkey <- ISU_ladies_df[ISU_ladies_df$NationID == "TUR",]
+athletes_turkey
+```
+
+As my friend warned me, Figure skating is not really the national sport, they have yet to win a medal in the Olympics in this discipline but they do have a number of juniors that could provide an interesting suprise in a senior category. I havent' really studied this category yet but if you're interested in turkish figure skating they are bringing the ice dancing couple Alisa Agafonova / Alper Uçar.
+
+# Average Personal Best scores per country
+
+Let's look at the top 10 countries with best average PB:
+
+```{r}
+library(plyr)
+score_nations_ladies <- ddply(ISU_ladies_df, .(NationID), summarize, mean_value = mean(Score))
+score_nations_ladies <- score_nations_ladies[order(-score_nations_ladies$mean_value),]
+head(score_nations_ladies, n=10)
+
+score_nations_men <- ddply(ISU_men_df, .(NationID), summarize, mean_value = mean(Score))
+score_nations_men <- score_nations_men[order(-score_nations_men$mean_value),]
+head(score_nations_men, n=10)
+```
+Russia is well above any other country both in ladies' and men's events, as expected. But below that there is a difference between the two events: in ladies' Japan is second, and to my surprise USA is actually 3rd, so they're not that bad after all! In men's events Belarys is second and again USA is third. In both events France is in the top 10, it could be worse, and it looks like our men's events are better. China is also in both top tens, their artistic component is really good. Canada is also in both lists although I expected them to be higher up than fourth and seventh respectively. Italy is in the ladie's top ten but not in the men's. Other countries I don't know so much about in this sport and were a bit of a surprise. 
+
+# Rank vs score plot
+
+Now we have a pretty good idea of the countries that usually come oon top but let's focus on the athletes rather than their countries now and look at the plot of scores and ranks:
+
+```{r}
+plot(ISU_ladies_df$Score, main="Score vs rank in Ladie's event", xlab="World rank of personal best", ylab="Personal best score")
+```
+
+The plot of rank according to score is interesting, it is a sigmoid. It shows a huge chunk of competitive athletes in the middle where the drop in rank and score is more linear. On the right side lower in the ranks, the scores tend to drop really fast under 50 points. On the left side up in the ranks, above 150 the scores become exponentially higher.
+
+# A linear regression model to predict the rank according to the score
+
+We are going to get a little math-y and build a very simple regression model which will work in the middle part of the plot. Regression models, for those who are allergic to math, is a way to predict given a value of rank here, the corresponding score. The reason this is interesting here, is say I am rank 601 overall in the world for PB and I want to know what score I will need to have to be rank 600 (come up a rank). This regression model will tell you, which doesn't make you better at skating, but can help you understand what kind of an effort you need to put in to do that. Isn't it neat? So this model doesn't take into account the fact that towards the ends of the plot it is no longer linear, so it is not perfect, but it is a model. Let's see how good it is:
+```{r}
+scores.lm = lm(Score ~ rank, data=ISU_ladies_df)
+scores.lm
+coeffs = coefficients(scores.lm)
+coeffs
+pred_601 = data.frame(rank=601)
+
+real_score_601 <- predict(scores.lm, pred_601)
+print(paste0("Predicted Score with rank 601: ", real_score_601))
+
+pred_600 = data.frame(rank=600)
+real_score_600 <- predict(scores.lm, pred_600)
+print(paste0("Predicted Score with rank 600: ", real_score_600))
+
+```
+ Not bad huh? So if I am rank 601 according to the model my score is 114.069277725803 and if I want to jump to rank 600 I have to have a score of 114.171089618544 so I want to add `r real_score_600 - real_score_601`. But let's see how good our model is by pulling up the actual numbers:
+ 
+```{r}
+real_score_601 <- ISU_ladies_df[ISU_ladies_df$rank == 601,]$Score
+real_score_600 <- ISU_ladies_df[ISU_ladies_df$rank == 600,]$Score
+
+print(paste0("Actual Score with rank 601: ", real_score_601))
+print(paste0("Actual Score with rank 600: ", real_score_600))
+```
+The model as expected is not perfect but the difference to get from one rank to the other in reality is `r real_score_600 - real_score_601`. Let's try to make it a little better!
+
+# Building a better model using only the linear part of the plot
+
+We will subset only the part of the plot that is pretty linear and remove those extreme values at the ends and use the same commands as before on that subset.
+```{r}
+new_model_df <- ISU_ladies_df[(ISU_ladies_df$rank < 1000 & ISU_ladies_df$rank > 175),]
+plot(new_model_df$Score, main="Score vs rank in Ladie's event in linear part", xlab="World rank of personal best", ylab="Personal best score")
+
+
+scores.lm = lm(Score ~ rank, data=new_model_df)
+scores.lm
+coeffs = coefficients(scores.lm)
+coeffs
+pred_601 = data.frame(rank=601)
+
+real_score_601 <- predict(scores.lm, pred_601)
+print(paste0("Predicted Score with rank 601: ", real_score_601))
+
+pred_600 = data.frame(rank=600)
+real_score_600 <- predict(scores.lm, pred_600)
+print(paste0("Predicted Score with rank 600: ", real_score_600))
+
+real_score_601 <- ISU_ladies_df[ISU_ladies_df$rank == 601,]$Score
+real_score_600 <- ISU_ladies_df[ISU_ladies_df$rank == 600,]$Score
+
+print(paste0("Actual Score with rank 601: ", real_score_601))
+print(paste0("Actual Score with rank 600: ", real_score_600))
+```
+That's much better! the difference to get from one rank to the other in reality is `r real_score_600 - real_score_601`. The model still isn't perfect because the plot isnt' completely linear. That was fun! 
+
+## Testing the model on the men's data
+
+Let's do the same thing for the men's data:
+```{r}
+plot(ISU_men_df$Score, main="Score vs rank in Men's event", xlab="World rank of personal best", ylab="Personal best score")
+
+men_model_df <- ISU_men_df[(ISU_men_df$rank < 750 & ISU_men_df$rank > 175),]
+plot(men_model_df$Score, main="Score vs rank in Men's event in linear part", xlab="World rank of personal best", ylab="Personal best score")
+
+
+scores.lm = lm(Score ~ rank, data=men_model_df)
+scores.lm
+coeffs = coefficients(scores.lm)
+coeffs
+pred_601 = data.frame(rank=601)
+
+real_score_601 <- predict(scores.lm, pred_601)
+print(paste0("Predicted Score with rank 601: ", real_score_601))
+
+pred_600 = data.frame(rank=600)
+real_score_600 <- predict(scores.lm, pred_600)
+print(paste0("Predicted Score with rank 600: ", real_score_600))
+
+real_score_601 <- ISU_men_df[ISU_men_df$rank == 601,]$Score
+real_score_600 <- ISU_men_df[ISU_men_df$rank == 600,]$Score
+
+print(paste0("Actual Score with rank 601: ", real_score_601))
+print(paste0("Actual Score with rank 600: ", real_score_600))
+```
+For the men's data the difference to get from one rank to the other in reality is `r real_score_600 - real_score_601`. It looks even better than in the ladie's data.
+
+There is lots more to do with this data but for today that's all! See you next time,
+
+Sciathlete
+
