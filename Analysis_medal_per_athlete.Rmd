@@ -1,9 +1,10 @@
 ---
-title: "Analysis_medal_per_athlete"
+title: "Analysis medal per athlete"
 author: "stewarta"
 date: "20 January 2018"
-output: html_document
+output: md_document
 ---
+
 ```{r set-options, echo=FALSE, cache=FALSE}
 options(width = 5000)
 ```
@@ -14,7 +15,8 @@ Today I am introducing a sneaky little data analysis using [R](https://www.r-pro
 
 ## Total number of athletes that have won at least a medal per country
 
-```{r fig.height = 5, fig.width= 15}
+```{r fig.height = 5, fig.width= 15, echo=FALSE}
+library(knitr)
 #reading csv file
 medalCount <- read.csv(file="./stats_athletes_with_medals_count.csv", header=TRUE, sep=",")
 medalCountdf <- data.frame(medalCount)
@@ -22,54 +24,54 @@ medalCountdf <- data.frame(medalCount)
 tbl_total_num_athletes_with_medal <- table(medalCountdf$NationID)
 barplot(tbl_total_num_athletes_with_medal, main="Number of medals won per country")
 ```
+
 This first plot represents the total number of medals per country over all the years they participated. Figure skating has been part of the winter Games since the beginning but not all nations have participated since the start, and some countries don't exist any more but they are still represented under their official name of the time, for example the USSR. Looking at the plot, the first thing we notice are the highest scoring nations: USA, Russia (both modern and USSR with the code USR), Canada, Austria. Let's dig deeper into what kind of medals each country mostly wins to see if certain countries are better:
 
 ## Number of gold medals per country
 
-```{r fig.height = 5, fig.width= 15}
+```{r fig.height = 5, fig.width= 15, echo=FALSE}
 tbl_gold <- table(medalCountdf[which(medalCountdf$G!=0),]$NationID)
 barplot(tbl_gold, main="Number of gold medals won per country")
-
 ```
+
 Here we see a clear difference with the previous plot: Russia clearly dominates the sport, more than twice the amount compared to any other country if you count Russia+USSR wins. My own country France is pretty low in that plot, which is a little sad, but our technique is just notas good as the Russians! Another thing I noted is Canada is not doing so well, which I was surprised about. Now let's zoom in on the athletes that are so good they won multiple times:
 
 ## Athletes that have won multiple times
 
-```{r fig.height = 5, fig.width= 20}
+```{r fig.height = 5, fig.width= 20, echo=FALSE}
 multiple_gold_athletes <- medalCountdf[which(medalCountdf$G>1),]
-print(multiple_gold_athletes)
+kable(multiple_gold_athletes)
 ```
-France is on the list! Ok, I'm done being semi-patriotic, it's not a very french thing to do. Anyway, most of those on the list are Russian, but number 1 and 2 are from Sweden and Norway. Gillis Grafström is the most successful skater at the olympics, but died in 1938. Sonja Henie was very succesful skater and celebrity and and died in 1969. Irina Rodnina is retired from competition. So it's up to the new generations to attempt to be as good as them!
+
+France is on the list! Most of those on the list are Russian, but number 1 and 2 are from Sweden and Norway. Gillis Grafström is the most successful skater at the olympics, but passed away in 1938. Norwegian Sonja Henie was also a very successful skater and celebrity and left us in 1969. Irina Rodnina is retired from competition and is now doing politics. So it's up to the new generations to attempt to be as good as them!
 
 ## French athletes with medals
 
 Since I am french and I used to skate in France, I'm very interested in how we did over the years so here are all the french athletes who have won at least a medal in the order they are scored according to how many and which color their medals were.
-```{r fig.height = 5, fig.width= 20}
-french_athletes_score <- medalCountdf[which(medalCountdf$NationID=="FRA"),]
-print(french_athletes_score)
 
+```{r fig.height = 5, fig.width= 20, echo=FALSE}
+french_athletes_score <- medalCountdf[which(medalCountdf$NationID=="FRA"),]
+kable(french_athletes_score)
 ```
+
 We have got 10 french athletes who have won medals in history, and when I started skating it was when the Marina and Gwendal couple were very famous in France and I wanted to be like them. Andree and Pierre Brunet were also a very famous couple and revolutionized the sport at the time, they are proper legends. So France is not looking too shabby, that's a relief!
 Let's look at those athletes who don't get as much attention, the ones who have not won the olympics:
 
-## Athletes who have not won a medal
+## Athletes who have not won a gold medal
 
-```{r fig.height = 5, fig.width= 20}
+```{r fig.height = 5, fig.width= 20, echo=FALSE}
 nations_with_athletes_with_no_wins <- table(medalCountdf[which(medalCountdf$G<1),]$NationID)
 barplot(nations_with_athletes_with_no_wins, main="Number of athletes per country who have never won")
 ```
 
 We notice that there is a very high number of athletes from USA who never won gold, more than in any country. However we know they also enter the highest number of athletes because they have the budget to send as many athletes as possible and not just the ones they know will win, so it is because of that. To showcase that more, let's look at the proportions of winning athletes per country:
  
-```{r fig.height = 5, fig.width= 20}
+```{r fig.height = 5, fig.width= 20, echo=FALSE}
 proportionWinningAthletes <- table(medalCountdf[which(medalCountdf$G>0),]$NationID)/table(medalCountdf$NationID)
 barplot(proportionWinningAthletes*100)
-
-print((sum(table(medalCountdf[which(medalCountdf$G>0),]$NationID))/length(medalCountdf$NationID))*100)
-
 ```
 
-Overall there is 38% of the athletes that have won at least a medal in their career that won gold at least once, and some countries have very few medal winning athletes, Korea has only one athlete that won medals and she won gold once, and Finland has had 2 that also both won so they both have a 100% win rate of medal winning athletes because their sample is small therefore it is biased. Otherwize Russia, of course, and its close neighbour Belarus have the highest proportion of gold medals per medal-winning athlete.
+Overall there is `r print((sum(table(medalCountdf[which(medalCountdf$G>0),]$NationID))/length(medalCountdf$NationID))*100)` of the athletes that have won at least a medal in their career that won gold at least once, and some countries have very few medal winning athletes, Korea has only one athlete that won medals and she won gold once, and Finland has had 2 that also both won so they both have a 100% win rate of medal winning athletes because their sample is small therefore it is biased. Otherwize Russia, of course, and its close neighbour Belarus have the highest proportion of gold medals per medal-winning athlete.
 
 ## Best scoring athletes at the olympics
 
@@ -77,33 +79,83 @@ I am using a different database here which is from the ISU ([International skati
 
 ### Ladies' performances
 
-```{r}
+```{r, echo=FALSE}
 library(readODS)
 ISU_ladies_df <- read_ods("ISU_events_PB_ladies.ods") ## return only the first sheet
 olympics_ladies <- ISU_ladies_df[grep("Olympic",ISU_ladies_df$Event),]
-olympics_ladies
+kable(olympics_ladies)
 ```
+
 Here is a table of all the athletes competing in the ladie's event at Olympics and have had their personal best in them. Here they are sorted by score and the beautiful Korean Yuna Kim is at the top. Adelina SOTNIKOVA just below her won the last Olympics. Belos her Carolina KOSTNER is an italian ice skating legend, she has a very unique style. The french Mae Berenice MEITE is a few spots below, she is very successful in France and although her technique is very athletic I do think she can improve her artistic component, I hope she does well in the next Games.
 
 Let's look at the last games from 2014:
 
-```{r}
+```{r, echo=FALSE}
 olympics_ladies_2014 <- olympics_ladies[grep("2014",olympics_ladies$Date),]
-olympics_ladies_2014
+kable(olympics_ladies_2014)
 ```
 
 In the last Olympics 4 athletes got their career PB, the winner Adelina SOTNIKOVA, two italians Carolina KOSTNER and Valentina MARCHEI, and ... our french national winner, Mae Berenice MEITE! We'll see if the 2014 winner can beat her own score this year, I certainly hope for something spectacular.
 
-```{r}
+```{r, echo=FALSE}
 library(readODS)
 ISU_men_df <- read_ods("ISU_events_PB_men.ods") ## return only the first sheet
 olympics_men <- ISU_men_df[grep("Olympic",ISU_men_df$Event),]
-olympics_men
+kable(olympics_men)
 ```
+
 For men we have 13 athletes that seem to do their best during Olympics, from various nationalities.
-```{r}
+
+```{r, echo=FALSE}
 olympics_men_2014 <- olympics_men[grep("14",olympics_men$Date),]
-olympics_men_2014
+kable(olympics_men_2014)
 ```
 
 During the last Olympics however only two men have had their best score there, German Peter Liebers and Czech Tomas Verner, neither ranking in the top 10 scores of all time.
+
+That's all for today, I hope this was entertaining! There is still so much we could do with this data but it'll be for another time!
+
+Sciathlete
+
+Here is the code if you want to have a look:
+
+```{r fig.height = 5, fig.width= 15, eval=FALSE}
+#reading csv file
+medalCount <- read.csv(file="./stats_athletes_with_medals_count.csv", header=TRUE, sep=",")
+medalCountdf <- data.frame(medalCount)
+#number of athletes per country that have won at least one medal
+tbl_total_num_athletes_with_medal <- table(medalCountdf$NationID)
+barplot(tbl_total_num_athletes_with_medal, main="Number of medals won per country")
+#Number of gold medals won per country
+tbl_gold <- table(medalCountdf[which(medalCountdf$G!=0),]$NationID)
+barplot(tbl_gold, main="Number of gold medals won per country")
+#table of multiple winning athletes
+multiple_gold_athletes <- medalCountdf[which(medalCountdf$G>1),]
+print(multiple_gold_athletes)
+#table of french athletes with medals
+french_athletes_score <- medalCountdf[which(medalCountdf$NationID=="FRA"),]
+print(french_athletes_score)
+#table of countries that have never won gold
+nations_with_athletes_with_no_wins <- table(medalCountdf[which(medalCountdf$G<1),]$NationID)
+barplot(nations_with_athletes_with_no_wins, main="Number of athletes per country who have never won")
+#proportion of athletes that won a medal that won gold
+proportionWinningAthletes <- table(medalCountdf[which(medalCountdf$G>0),]$NationID)/table(medalCountdf$NationID)
+barplot(proportionWinningAthletes*100)
+
+print((sum(table(medalCountdf[which(medalCountdf$G>0),]$NationID))/length(medalCountdf$NationID))*100)
+#reading Personal Best dataframe
+library(readODS)
+ISU_ladies_df <- read_ods("ISU_events_PB_ladies.ods") ## return only the first sheet
+olympics_ladies <- ISU_ladies_df[grep("Olympic",ISU_ladies_df$Event),]
+olympics_ladies
+
+olympics_ladies_2014 <- olympics_ladies[grep("2014",olympics_ladies$Date),]
+olympics_ladies_2014
+
+ISU_men_df <- read_ods("ISU_events_PB_men.ods")
+olympics_men <- ISU_men_df[grep("Olympic",ISU_men_df$Event),]
+olympics_men
+#Personal best of athletes obtained in 2014 Olympics
+olympics_men_2014 <- olympics_men[grep("14",olympics_men$Date),]
+olympics_men_2014
+```
